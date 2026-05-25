@@ -20,6 +20,8 @@ import {
   TenantDisputeRecord,
 } from '@/lib/query/hooks/use-tenant-disputes';
 import { formatDistanceToNow } from 'date-fns';
+import { useModal } from '@/contexts/ModalContext';
+import type { EvidenceUploadData } from '@/components/modals/EvidenceUploadModal';
 
 const statusBadge: Record<DisputeStatus, string> = {
   OPEN: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
@@ -37,6 +39,7 @@ interface DisputesListProps {
 }
 
 export function DisputesList({ className = '' }: DisputesListProps) {
+  const { openModal } = useModal();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
@@ -139,29 +142,56 @@ export function DisputesList({ className = '' }: DisputesListProps) {
       {
         id: 'actions',
         cell: ({ row }) => (
-          <Link
-            href={`/user/disputes/${row.original.id}`}
-            className="inline-flex items-center gap-2 rounded-lg border border-blue-500/20 bg-blue-500/10 px-2 py-1 text-blue-300/70 hover:text-white hover:bg-blue-500/20 transition-colors"
-            aria-label={`Preview dispute ${row.original.disputeId}`}
-          >
-            <span className="relative h-6 w-6 overflow-hidden rounded-md border border-white/10 bg-white/5">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={DISPUTE_PREVIEW_FALLBACK}
-                alt=""
-                className="h-full w-full object-cover"
-                loading="lazy"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                }}
-              />
-            </span>
-            <Eye className="h-4 w-4" />
-          </Link>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() =>
+                openModal('disputeDetail', {
+                  dispute: {
+                    id: row.original.id,
+                    disputeId: row.original.disputeId,
+                    agreementReference: row.original.agreementReference,
+                    propertyName: row.original.propertyName,
+                    counterpartyName: 'Landlord',
+                    disputeType: row.original.disputeType,
+                    description: row.original.description,
+                    status: row.original.status,
+                    requestedAmount: row.original.requestedAmount,
+                    evidenceCount: row.original.evidenceCount,
+                    commentCount: row.original.commentCount,
+                    createdAt: row.original.createdAt,
+                    updatedAt: row.original.updatedAt,
+                  },
+                  onUploadEvidence: (disputeId: string) =>
+                    openModal('evidenceUpload', {
+                      disputeId,
+                      disputeTitle: row.original.disputeId,
+                      onUpload: async (data: EvidenceUploadData) => {
+                        const { apiClient } = await import('@/lib/api-client');
+                        await apiClient.post(
+                          `/disputes/${disputeId}/evidence`,
+                          data,
+                        );
+                      },
+                    }),
+                })
+              }
+              className="inline-flex items-center gap-2 rounded-lg border border-blue-500/20 bg-blue-500/10 px-2 py-1 text-blue-300/70 hover:text-white hover:bg-blue-500/20 transition-colors"
+              aria-label={`Preview dispute ${row.original.disputeId}`}
+            >
+              <Eye className="h-4 w-4" />
+            </button>
+            <Link
+              href={`/user/disputes/${row.original.id}`}
+              className="text-xs text-blue-400 hover:text-blue-300"
+            >
+              Details
+            </Link>
+          </div>
         ),
       },
     ],
-    [],
+    [openModal],
   );
 
   const table = useReactTable({

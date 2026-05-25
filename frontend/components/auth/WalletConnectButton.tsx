@@ -9,8 +9,8 @@ import {
 } from '@/lib/stellar-wallets-kit';
 import toast from 'react-hot-toast';
 import { requestChallenge, verifySignature } from '@/lib/stellar-auth';
+import { getNetworkPassphrase } from '@/lib/stellar-network';
 import { detectRoleFromWallet } from '@/lib/navigation/detect-user-role';
-import * as StellarSdk from '@stellar/stellar-sdk';
 
 interface WalletConnectButtonProps {
   onSuccess?: () => void;
@@ -72,7 +72,7 @@ export default function WalletConnectButton({
           const { signedTxXdr } = await StellarWalletsKit.signTransaction(
             challengeXdr,
             {
-              networkPassphrase: StellarSdk.Networks.PUBLIC,
+              networkPassphrase: getNetworkPassphrase(),
               address,
             },
           );
