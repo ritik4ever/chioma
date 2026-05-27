@@ -159,6 +159,7 @@ Chioma supports dual authentication: **JWT (email/password)** and **Stellar SEP-
 
 | Document                                                     | Summary                         |
 | ------------------------------------------------------------ | ------------------------------- |
+| [Dead Letter Queues](./queues/DEAD_LETTER_QUEUES.md)         | Failed job archival and retry   |
 | [Bull Queues](./queues/BULL_QUEUES_IMPLEMENTATION.md)        | Queue setup, workers, job types |
 | [Implementation Summary](./queues/IMPLEMENTATION_SUMMARY.md) | Summary of queue usage          |
 
